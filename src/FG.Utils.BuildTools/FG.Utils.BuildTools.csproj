@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net461</TargetFramework>
+		<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+		<SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+		<Platforms>AnyCPU;x64</Platforms>
+		<Company>Fabriccators Guild</Company>
+		<OutputType>Library</OutputType>
+		<Authors>Fabriccators Guild</Authors>
+		<Product>Fabriccators Guild Utils Build Tools</Product>
+		<Description>Tooling for working with Visual Studio solutions and .NET projects</Description>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Copyright>Fabriccators Guild 2017</Copyright>
+		<PackageLicenseUrl>https://github.com/FabricatorsGuild</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/FabricatorsGuild/FG.Utils</PackageProjectUrl>
+		<PackageIconUrl>https://raw.githubusercontent.com/FabricatorsGuild/FG.Utils/master/fg.logo.png</PackageIconUrl>
+		<RepositoryUrl>https://github.com/FabricatorsGuild/FG.Utils</RepositoryUrl>
+		<PackageReleaseNotes />
+	</PropertyGroup>
+	<ItemGroup>
+	  <Reference Include="System.IO.Compression" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net461</TargetFramework>
+		<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+		<SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+		<Platforms>AnyCPU;x64</Platforms>
+		<Company>Code Effect</Company>
+		<OutputType>Library</OutputType>
+		<Authors>Code Effect</Authors>
+		<Product>CE Labs</Product>
+		<Description>Sample project for running testing CE Labs BuildTools</Description>
+		<RootNamespace>Ce.Labs.Samples</RootNamespace>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <OutputPath>bin\Debug\net461\win7-x64\special_bin</OutputPath>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="SampleClass3NotIncludedInproject.cs" />
+		<Compile Update="SampleClass5IncludedInprojectDependentOnClass4.cs">
+			<DependentUpon>SampleClass4IncludedInprojectWithProperties.cs</DependentUpon>
+		</Compile>
+		<Compile Update="SampleClass4IncludedInprojectWithProperties.cs">
+			<Property1>sample</Property1>
+			<Property2>class4</Property2>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="FluentAssertions" Version="4.19.4" />
+		<PackageReference Include="NUnit" Version="3.9.0" />
+	</ItemGroup>
+</Project>

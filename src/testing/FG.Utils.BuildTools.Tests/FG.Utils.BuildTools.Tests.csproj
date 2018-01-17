@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net461</TargetFramework>
+		<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+		<SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+		<Platforms>AnyCPU;x64</Platforms>
+		<Company>Code Effect</Company>
+		<OutputType>Library</OutputType>
+		<Authors>Code Effect</Authors>
+		<Product>CE Labs</Product>
+		<Description>Test project for testing CE Labs BuildTools</Description>
+	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="FluentAssertions" Version="4.19.4" />
+	  <PackageReference Include="NUnit" Version="3.9.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\FG.Utils.BuildTools\FG.Utils.BuildTools.csproj" />
+	  <ProjectReference Include="..\samples\Ce.Labs.Samples.ClassicProject\Ce.Labs.Samples.ClassicProject.csproj" />
+	  <ProjectReference Include="..\samples\Ce.Labs.Samples.CPSProject\Ce.Labs.Samples.CPSProject.csproj" />
+	</ItemGroup>
+</Project>
