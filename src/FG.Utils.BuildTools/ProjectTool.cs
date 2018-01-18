@@ -1170,5 +1170,233 @@ namespace FG.Utils.BuildTools
 		}
 
 
-	}
+        public void AddFileToProject(string path, string includeType, IDictionary<string, string> properties = null)
+        {
+            if (!_isCpsDocument)
+            {
+                AddFileToClassicProject(path, includeType, properties);
+            }
+            else
+            {
+                AddFileToCPSProject(path, includeType, properties);
+            }
+        }
+
+        private void AddFileToClassicProject(string path, string includeType, IDictionary<string, string> properties)
+        {
+            var projectNode = _document.Element(_msbNs + "Project");
+            if (projectNode == null) throw new ApplicationException($"Invalid Project xml, could not find Project node");
+
+            var include = PathExtensions.MakeRelativePath(this.FolderPath, path);
+            var fileType = System.IO.Path.GetExtension(include);
+
+            var isCompileFile = (fileType == ".cs");
+            var isNoneFile = (fileType == ".json" || fileType == ".config");
+
+            includeType = includeType ?? (isCompileFile ? "Compile" : "None");
+
+            var itemGroups = projectNode.Elements(_msbNs + "ItemGroup")
+                .SelectMany(element => element.Elements(_msbNs + includeType));
+            XElement parentNode = null;
+            var existingItemGroup = itemGroups.FirstOrDefault();
+            if (existingItemGroup != null)
+            {
+                parentNode = existingItemGroup.Parent;
+            }
+            else
+            {
+                var itemGroupElement = new XElement(_msbNs + "ItemGroup");
+                projectNode.Add(itemGroupElement);
+                parentNode = itemGroupElement;
+            }
+
+            var includePath = PathExtensions.MakeRelativePath(this.FolderPath, path);
+
+            var includeElement = projectNode
+                .Elements(_msbNs + "ItemGroup")
+                .SelectMany(e => e.Elements(_msbNs + includeType))
+                .FirstOrDefault(e => e?.Attribute("Include")?.Value == includePath);
+            if (includeElement == null)
+            {
+                includeElement = new XElement(_msbNs + includeType,
+                    new XAttribute("Include", includePath)
+                );
+                parentNode.Add(includeElement);
+                _didUpdateDocument = true;
+            }
+
+            var itemProperties = includeElement.HasElements
+                ? includeElement.Elements().ToDictionary(e => e.Name.LocalName, e => e.Value)
+                : new Dictionary<string, string>();
+
+            if (!itemProperties.AreEquivalent(properties))
+            {
+                if (properties != null)
+                {
+                    foreach (var property in properties)
+                    {
+                        var propertyElement = new XElement(_msbNs + property.Key, property.Value);
+                        includeElement.Add(propertyElement);
+                    }
+                }
+            }
+        }
+
+        private void AddFileToCPSProject(string path, string includeType, IDictionary<string, string> properties)
+        {
+            var projectNode = _document.Element("Project");
+            if (projectNode == null) throw new ApplicationException($"Invalid Project xml, could not find Project node");
+
+            var include = PathExtensions.MakeRelativePath(this.FolderPath, path);
+            var fileType = System.IO.Path.GetExtension(include);
+
+            var isCompileFile = (fileType == ".cs");
+            var isNoneFile = (fileType == ".json" || fileType == ".config");
+
+            includeType = includeType ?? (isCompileFile ? "Compile" : "None");
+
+            //var includePath = PathExtensions.MakeRelativePath(this.FolderPath, path);
+
+            var updateElement = projectNode
+                .Elements(_msbNs + "ItemGroup")
+                .SelectMany(e => e.Elements(includeType))
+                .FirstOrDefault(e => e?.Attribute("Update")?.Value == include);
+
+            var removeElement = projectNode
+                .Elements("ItemGroup")
+                .SelectMany(e => e.Elements(includeType))
+                .FirstOrDefault(e => e?.Attribute("Remove")?.Value == include);
+
+            if (updateElement == null && removeElement == null && (properties == null || !properties.Any())) return;
+
+            removeElement?.Remove();
+
+            var itemGroups = projectNode.Elements("ItemGroup")
+                .SelectMany(element => element.Elements(includeType));
+            XElement parentNode = null;
+            var existingItemGroup = itemGroups.FirstOrDefault();
+            if (existingItemGroup != null)
+            {
+                parentNode = existingItemGroup.Parent;
+            }
+            else
+            {
+                var itemGroupElement = new XElement("ItemGroup");
+                projectNode.Add(itemGroupElement);
+                parentNode = itemGroupElement;
+                _didUpdateDocument = true;
+            }
+
+            if (updateElement == null)
+            {
+                updateElement = new XElement(includeType,
+                    new XAttribute("Update", include)
+                );
+                parentNode.Add(updateElement);
+                _didUpdateDocument = true;
+            }
+
+
+
+            var itemProperties = updateElement.HasElements
+                ? updateElement.Elements().ToDictionary(e => e.Name.LocalName, e => e.Value)
+                : new Dictionary<string, string>();
+
+            if (!itemProperties.AreEquivalent(properties))
+            {
+                updateElement.Elements().Remove();                
+                foreach (var property in properties)
+                {
+                    var propertyElement = new XElement(_msbNs + property.Key, property.Value);
+                    updateElement.Add(propertyElement);
+                }
+                _didUpdateDocument = true;
+            }
+        }
+
+
+        public void RemoveFileFromProject(string path)
+        {
+            if (!_isCpsDocument)
+            {
+                RemoveFileFromClassicProject(path);
+            }
+            else
+            {
+                RemoveFileFromCPSProject(path);
+            }
+        }
+
+        private void RemoveFileFromClassicProject(string path)
+        {
+            var projectNode = _document.Element(_msbNs + "Project");
+            if (projectNode == null) throw new ApplicationException($"Invalid Project xml, could not find Project node");
+
+            var includePath = PathExtensions.MakeRelativePath(this.FolderPath, path);
+
+            var includeElement = projectNode
+                .Elements(_msbNs + "ItemGroup")
+                .SelectMany(e => e.Elements())
+                .FirstOrDefault(e => e?.Attribute("Include")?.Value == includePath);
+            if (includeElement != null)
+            {
+                includeElement.Remove();
+                _didUpdateDocument = true;
+            }
+        }
+
+        private void RemoveFileFromCPSProject(string path)
+        {
+            var projectNode = _document.Element("Project");
+            if (projectNode == null) throw new ApplicationException($"Invalid Project xml, could not find Project node");
+
+            var include = PathExtensions.MakeRelativePath(this.FolderPath, path);
+            var fileType = System.IO.Path.GetExtension(include);
+            var isCompileFile = (fileType == ".cs");
+            var isNoneFile = (fileType == ".json" || fileType == ".config");
+            var elementType = isCompileFile ? "Compile" : "None";
+
+            var updateElement = projectNode
+                .Elements(_msbNs + "ItemGroup")
+                .SelectMany(e => e.Elements())
+                .FirstOrDefault(e => e?.Attribute("Update")?.Value == include);
+
+            var removeElement = projectNode
+                .Elements("ItemGroup")
+                .SelectMany(e => e.Elements())
+                .FirstOrDefault(e => e?.Attribute("Remove")?.Value == include);
+
+            if (updateElement == null && removeElement != null) return;
+
+            XElement parentNode = updateElement?.Parent ?? removeElement?.Parent;
+            updateElement?.Remove();
+
+            if (parentNode == null)
+            {
+                var itemGroups = projectNode.Elements("ItemGroup")
+                    .SelectMany(element => element.Elements("Compile"));
+                var existingItemGroup = itemGroups.FirstOrDefault();
+                if (existingItemGroup != null)
+                {
+                    parentNode = existingItemGroup.Parent;
+                }
+                else
+                {
+                    var itemGroupElement = new XElement("ItemGroup");
+                    projectNode.Add(itemGroupElement);
+                    parentNode = itemGroupElement;
+                    _didUpdateDocument = true;
+                }
+            }
+
+            if (removeElement == null)
+            {
+                removeElement = new XElement(elementType,
+                    new XAttribute("Remove", include)
+                );
+                parentNode.Add(removeElement);
+                _didUpdateDocument = true;
+            }            
+        }
+    }
 }

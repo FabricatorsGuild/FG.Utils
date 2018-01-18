@@ -3,7 +3,7 @@ using System.Text;
 
 namespace FG.Utils.BuildTools
 {
-	public static class PathExtensions
+    public static class PathExtensions
 	{
 
 		public static string GetAbsolutePath(string relativePath)
@@ -33,7 +33,7 @@ namespace FG.Utils.BuildTools
 			return System.IO.Path.GetFullPath((new Uri(path)).LocalPath);
 		}
 
-
+        [Obsolete]
 		/// <summary>
 		/// Creates a relative path from one file or folder to another.
 		/// </summary>
