@@ -120,7 +120,7 @@ namespace FG.Utils.BuildTools.Tests
         {
             var projectTool = TempCopyAndGetProject(projectRelativePath);
 
-            var scanFilesInProjectFolderBefore = projectTool.ScanFilesInProjectFolder();            
+            var scanFilesInProjectFolderBefore = projectTool.ScanFilesInProjectFolder();
             var compileFilesBefore = scanFilesInProjectFolderBefore
                 .Where(f => f.IncludeType == "Compile")
                 .Select(f => $"{f.IncludeType}:{f.Name}")
@@ -142,10 +142,42 @@ namespace FG.Utils.BuildTools.Tests
 
             compileFilesAfter.Should().BeEquivalentTo(
                 // Admittedly this does nothing, as the file actually doesn't exist on disk for CPS projects. But the change to the project should be this (none)
-                projectTool.IsCpsDocument ? compileFilesBefore : compileFilesBefore.Union(new string[]{ "Compile:newCompileFile.cs" })
+                projectTool.IsCpsDocument ? compileFilesBefore : compileFilesBefore.Union(new string[] { "Compile:newCompileFile.cs" })
+                    .OrderBy(o => o)
+                    .Debug(new ConsoleDebugLogger(true))
+                    .ToArray()
+            );
+        }
+
+        private void Should_be_able_to_add_non_compile_non_content_file_to_project(string projectRelativePath)
+        {
+            var projectTool = TempCopyAndGetProject(projectRelativePath);
+
+            var scanFilesInProjectFolderBefore = projectTool.ScanFilesInProjectFolder();
+            var compileFilesBefore = scanFilesInProjectFolderBefore
+                .Where(f => f.IncludeType == "Content")
+                .Select(f => $"{f.IncludeType}:{f.Name}")
+                .ToArray();
+
+            var newFilePath = PathExtensions.GetAbsolutePath(projectTool.FolderPath, $"newContentFile.json");
+
+            projectTool.AddFileToProject(newFilePath, "Content");
+            projectTool.Save();
+
+            var newProjectTool = new ProjectTool(projectTool.FilePath, new ConsoleDebugLogger(true));
+            var scanFilesInProjectFolderAfter = newProjectTool.ScanFilesInProjectFolder();
+            var compileFilesAfter = scanFilesInProjectFolderAfter
+                .Where(f => f.IncludeType == "Content")
+                .Select(f => $"{f.IncludeType}:{f.Name}")
                 .OrderBy(o => o)
                 .Debug(new ConsoleDebugLogger(true))
-                .ToArray()
+                .ToArray();
+
+            compileFilesAfter.Should().BeEquivalentTo(
+                compileFilesBefore.Union(new string[] { "Content:newContentFile.json" })
+                    .OrderBy(o => o)
+                    .Debug(new ConsoleDebugLogger(true))
+                    .ToArray()
             );
         }
 
@@ -318,6 +350,19 @@ namespace FG.Utils.BuildTools.Tests
         public void Should_be_able_to_add_file_to_cps_project()
         {
             Should_be_able_to_add_file_to_project(CPSProjectRelativePath);
+        }
+
+
+        [Test]
+        public void Should_be_able_to_add_non_compile_non_content_file_to_classic_project()
+        {
+            Should_be_able_to_add_non_compile_non_content_file_to_project(ClassicProjectRelativePath);
+        }
+
+        [Test]
+        public void Should_be_able_to_add_non_compile_non_content_file_to_cps_project()
+        {
+            Should_be_able_to_add_non_compile_non_content_file_to_project(CPSProjectRelativePath);
         }
 
         [Test]

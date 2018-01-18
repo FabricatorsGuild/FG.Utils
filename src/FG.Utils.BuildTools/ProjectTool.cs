@@ -990,8 +990,44 @@ namespace FG.Utils.BuildTools
 		        }
 		    }
 
+		    // Include explicitly included files
+		    var itemGroupIncludeNodes = projectNode.Elements("ItemGroup")
+		        .SelectMany(element => element.Elements())
+		        .Where(element => element.Attribute("Include")?.Value != null)
+		        .Where(element => element.Name.LocalName != "Reference" && element.Name.LocalName != "ProjectReference")
+		        .ToArray();
+
+		    foreach (var itemGroupIncludeNode in itemGroupIncludeNodes)
+		    {
+		        var includeName = itemGroupIncludeNode.Attribute("Include")?.Value;
+		        var includeType = itemGroupIncludeNode.Name.LocalName;
+
+		        var isPureProjectItem = (new[] { "WCFMetadata", "Folder", "Service", "BootstrapperPackage" }).Contains(includeType);
+
+		        var itemProperties = itemGroupIncludeNode.HasElements ?
+		            itemGroupIncludeNode.Elements().ToDictionary(e => e.Name.LocalName, e => e.Value) :
+		            new Dictionary<string, string>();
+
+		        if (!isPureProjectItem)
+		        {
+		            var path = PathExtensions.GetAbsolutePath(this.FolderPath, includeName);
+		            var fileReference = new FileReference()
+		            {
+		                IncludeType = includeType,
+		                Path = path,
+		                Name = includeName,
+		                InProjectFile = true,
+		                OnDisk = true,
+		                Properties = itemProperties,
+		            };
+
+		            fileReference.OnDisk = discoveredFiles.ContainsKey(path.ToLowerInvariant());
+		            discoveredFiles[path.ToLowerInvariant()] = fileReference;
+		        }
+		    }
+
             // Remove excluded files
-		    var itemGroupRemoveNodes = projectNode.Elements("ItemGroup")
+            var itemGroupRemoveNodes = projectNode.Elements("ItemGroup")
 		        .SelectMany(element => element.Elements())
 		        .Where(element => element.Attribute("Remove")?.Value != null)
 		        .Where(element => element.Name.LocalName != "Reference" && element.Name.LocalName != "ProjectReference")
@@ -1251,7 +1287,8 @@ namespace FG.Utils.BuildTools
             var fileType = System.IO.Path.GetExtension(include);
 
             var isCompileFile = (fileType == ".cs");
-            var isNoneFile = (fileType == ".json" || fileType == ".config");
+            var isContentFile = (fileType == ".json" || fileType == ".config");
+            var action = isCompileFile ? "Update" : "Include";
 
             includeType = includeType ?? (isCompileFile ? "Compile" : "None");
 
@@ -1260,14 +1297,14 @@ namespace FG.Utils.BuildTools
             var updateElement = projectNode
                 .Elements(_msbNs + "ItemGroup")
                 .SelectMany(e => e.Elements(includeType))
-                .FirstOrDefault(e => e?.Attribute("Update")?.Value == include);
+                .FirstOrDefault(e => e?.Attribute(action)?.Value == include);
 
             var removeElement = projectNode
                 .Elements("ItemGroup")
                 .SelectMany(e => e.Elements(includeType))
                 .FirstOrDefault(e => e?.Attribute("Remove")?.Value == include);
 
-            if (updateElement == null && removeElement == null && (properties == null || !properties.Any())) return;
+            if (updateElement == null && removeElement == null && action  == "Update" && (properties == null || !properties.Any())) return;
 
             removeElement?.Remove();
 
@@ -1290,7 +1327,7 @@ namespace FG.Utils.BuildTools
             if (updateElement == null)
             {
                 updateElement = new XElement(includeType,
-                    new XAttribute("Update", include)
+                    new XAttribute(action, include)
                 );
                 parentNode.Add(updateElement);
                 _didUpdateDocument = true;
@@ -1304,11 +1341,14 @@ namespace FG.Utils.BuildTools
 
             if (!itemProperties.AreEquivalent(properties))
             {
-                updateElement.Elements().Remove();                
-                foreach (var property in properties)
+                updateElement.Elements().Remove();
+                if (properties != null)
                 {
-                    var propertyElement = new XElement(_msbNs + property.Key, property.Value);
-                    updateElement.Add(propertyElement);
+                    foreach (var property in properties)
+                    {
+                        var propertyElement = new XElement(_msbNs + property.Key, property.Value);
+                        updateElement.Add(propertyElement);
+                    }
                 }
                 _didUpdateDocument = true;
             }
