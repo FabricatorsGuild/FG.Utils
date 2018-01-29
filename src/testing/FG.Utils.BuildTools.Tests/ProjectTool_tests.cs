@@ -58,6 +58,7 @@ namespace FG.Utils.BuildTools.Tests
             var files = scanedFiles
                 .Where(f => f.IncludeType != "Remove")
                 .Where(f => f.IncludeType != "Unknown")
+                .Where(f => f.IncludeType != "PackageReference")
                 .Select(f => $"{f.IncludeType}:{f.Name}")
                 .Where(f => !f.EndsWith("Properties\\AssemblyInfo.cs"))
                 .ToArray();

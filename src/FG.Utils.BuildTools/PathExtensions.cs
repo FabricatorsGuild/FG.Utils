@@ -20,6 +20,17 @@ namespace FG.Utils.BuildTools
 				combinedPath = System.IO.Path.Combine(basePath, relativePath);
 			}
 
+		    var wildCardIndex = combinedPath.IndexOf("*", StringComparison.Ordinal);
+		    if (wildCardIndex != -1)
+		    {
+		        var nonWildCardPart = combinedPath.Substring(0, wildCardIndex);
+		        var wildCardPart = combinedPath.Substring(wildCardIndex);
+
+		        var nonWildCardPartPath = System.IO.Path.GetFullPath((new Uri(nonWildCardPart)).LocalPath);
+
+		        return $"{nonWildCardPartPath}{wildCardPart}";
+		    }
+
 			return System.IO.Path.GetFullPath((new Uri(combinedPath)).LocalPath);
 		}
 
@@ -33,40 +44,17 @@ namespace FG.Utils.BuildTools
 			return System.IO.Path.GetFullPath((new Uri(path)).LocalPath);
 		}
 
-        [Obsolete]
-		/// <summary>
-		/// Creates a relative path from one file or folder to another.
-		/// </summary>
-		/// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
-		/// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
-		/// <returns>The relative path from the start directory to the end path or <c>toPath</c> if the paths are not related.</returns>
-		/// <exception cref="ArgumentNullException"></exception>
-		/// <exception cref="UriFormatException"></exception>
-		/// <exception cref="InvalidOperationException"></exception>
-		public static string MakeRelativePathX(string fromPath, string toPath)
-		{
-			if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException(nameof(fromPath));
-			if (string.IsNullOrEmpty(toPath)) throw new ArgumentNullException(nameof(toPath));
+        
 
-			var fromUri = new Uri(fromPath);
-			var toUri = new Uri(toPath);
-
-			if (fromUri.Scheme != toUri.Scheme)
-			{
-				return toPath;
-			} // path can't be made relative.
-
-			var relativeUri = fromUri.MakeRelativeUri(toUri);
-			var relativePath = Uri.UnescapeDataString(relativeUri.ToString());
-
-			if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
-			{
-				relativePath = relativePath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
-			}
-
-			return relativePath;
-		}
-
+	    /// <summary>
+	    /// Creates a relative path from one file or folder to another.
+	    /// </summary>
+	    /// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
+	    /// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
+	    /// <returns>The relative path from the start directory to the end path or <c>toPath</c> if the paths are not related.</returns>
+	    /// <exception cref="ArgumentNullException"></exception>
+	    /// <exception cref="UriFormatException"></exception>
+	    /// <exception cref="InvalidOperationException"></exception>
 		public static string MakeRelativePath(string basePath, string path)
 		{
 			path = path.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);

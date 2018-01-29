@@ -16,9 +16,9 @@
 		<PackageIconUrl>https://raw.githubusercontent.com/FabricatorsGuild/FG.Utils/master/fg.logo.png</PackageIconUrl>
 		<RepositoryUrl>https://github.com/FabricatorsGuild/FG.Utils</RepositoryUrl>
 		<PackageReleaseNotes>Added support for adding/removing project files</PackageReleaseNotes>
-		<Version>1.1.1</Version>
-		<AssemblyVersion>1.1.1.0</AssemblyVersion>
-		<FileVersion>1.1.1.0</FileVersion>
+		<Version>1.2.0</Version>
+		<AssemblyVersion>1.2.0.0</AssemblyVersion>
+		<FileVersion>1.2.0.0</FileVersion>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Reference Include="System.IO.Compression" />

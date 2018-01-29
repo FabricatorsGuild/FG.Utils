@@ -1057,6 +1057,47 @@ namespace FG.Utils.BuildTools
 		        }
 		    }
 
+            // Remove wildcards
+            var wildCards = new Dictionary<Regex, string>();            
+		    foreach (var discoveredFilesKey in discoveredFiles.Keys.ToArray())
+		    {
+		        if (discoveredFilesKey.IndexOf('*') != -1)
+		        {
+		            // This is a wildcard
+
+                    // build regex
+		            var wildcardFile = discoveredFiles[discoveredFilesKey];
+		            var wildcardPath = wildcardFile.Path;
+
+		            var wildcardPattern = wildcardPath.Replace("\\", "@@BACKSLASH@@").Replace("." ,"@@DOT@@").Replace("**", "@@GLOB@@").Replace("*", "@@ANY@@")
+		                .Replace("@@BACKSLASH@@", @"\\").Replace("@@DOT@@", @".").Replace("@@GLOB@@", @".*").Replace("@@ANY@@", @"[^\]*");
+
+		            var regex = new Regex(wildcardPattern, RegexOptions.IgnoreCase);
+		            wildCards.Add(regex, wildcardFile.IncludeType);
+
+		            discoveredFiles.Remove(discoveredFilesKey);
+		        }
+		    }
+		    foreach (var wildCard in wildCards)
+		    {
+                
+		        foreach (var discoveredFilesKey in discoveredFiles.Keys)
+		        {
+		            var match = wildCard.Key.Match(discoveredFilesKey);
+		            if (match.Success)
+		            {
+		                if (wildCard.Value == "Remove")
+		                {
+		                    var discoveredFile = discoveredFiles[discoveredFilesKey];
+		                    if (!discoveredFile.InProjectFile && discoveredFile.OnDisk)
+		                    {
+		                        discoveredFile.IncludeType = "Remove";
+		                    }
+		                }
+                    }
+		        }
+		    }
+
             return discoveredFiles.Values;
 		}
 

@@ -15,6 +15,11 @@
 	  <OutputPath>bin\Debug\net461\win7-x64\special_bin</OutputPath>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="ExcludeItAll\**" />
+	  <EmbeddedResource Remove="ExcludeItAll\**" />
+	  <None Remove="ExcludeItAll\**" />
+	</ItemGroup>
+	<ItemGroup>
 		<Compile Remove="SampleClass3NotIncludedInproject.cs" />
 		<Compile Update="SampleClass5IncludedInprojectDependentOnClass4.cs">
 			<DependentUpon>SampleClass4IncludedInprojectWithProperties.cs</DependentUpon>
