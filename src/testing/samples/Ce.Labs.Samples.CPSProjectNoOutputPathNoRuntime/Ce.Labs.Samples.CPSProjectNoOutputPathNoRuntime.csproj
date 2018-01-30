@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net461</TargetFramework>
+		<SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+		<Platforms>AnyCPU;x64</Platforms>
+		<Company>Code Effect</Company>
+		<OutputType>Library</OutputType>
+		<Authors>Code Effect</Authors>
+		<Product>CE Labs</Product>
+		<Description>Sample project for running testing CE Labs BuildTools</Description>
+		<RootNamespace>Ce.Labs.Samples</RootNamespace>
+	</PropertyGroup>
+</Project>

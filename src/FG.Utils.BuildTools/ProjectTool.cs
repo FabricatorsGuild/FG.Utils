@@ -1479,5 +1479,59 @@ namespace FG.Utils.BuildTools
                 _didUpdateDocument = true;
             }            
         }
+
+	    public string GetProjectOutputPath(string configuration, string platform)
+	    {
+	        if (!_isCpsDocument)
+	        {
+	            return GetClassicProjectOutputPath(configuration, platform);
+	        }
+	        else
+	        {
+	            return GetCPSProjectOutputPath(configuration, platform);
+	        }
+	    }
+
+	    private string GetDefaultOutputPath(string configuration, string platform)
+	    {
+	        return (string.IsNullOrWhiteSpace(platform) || platform == "AnyCPU")
+	            ? $"bin\\{configuration}"
+	            : $"bin\\{platform}\\{configuration}";
+	    }
+
+
+        private string GetClassicProjectOutputPath(string configuration, string platform)
+	    {
+	        var projectProperties = GetClassicProjectProperties(configuration, platform);
+	        if (projectProperties.ContainsKey("OutputPath"))
+	        {
+	            return projectProperties["OutputPath"];
+	        }
+	        return GetDefaultOutputPath(configuration, platform);
+	    }
+
+	    private string GetCPSProjectOutputPath(string configuration, string platform)
+	    {
+	        var projectProperties = GetCPSProjectProperties(configuration, platform);
+
+            var outputPath = projectProperties.Get("OutputPath") ?? GetDefaultOutputPath(configuration, platform);
+            var targetFramework = projectProperties.Get("TargetFramework");
+	        var platformTarget = projectProperties.Get("PlatformTarget");
+	        var runtimeIdentifier = projectProperties.Get("RuntimeIdentifier");
+
+	        if (targetFramework != null)
+	        {
+	            outputPath = $"{outputPath}\\{targetFramework}";
+	        }
+
+	        if (runtimeIdentifier != null)
+	        {
+	            outputPath = $"{outputPath}\\{runtimeIdentifier}";
+            }
+
+	        return outputPath;
+	    }
+
+
     }
 }

@@ -13,7 +13,17 @@ namespace FG.Utils.BuildTools.Tests
         private const string CPSProjectRelativePath =
             @"../../../../../samples/Ce.Labs.Samples.CPSProject/Ce.Labs.Samples.CPSProject.csproj";
 
-        private IList<string> _temporaryProjectFileCopies = new List<string>();
+        private const string CPSProjectRelativePathNoOutputPath =
+            @"../../../../../samples/Ce.Labs.Samples.CPSProjectNoOutputPath/Ce.Labs.Samples.CPSProjectNoOutputPath.csproj";
+        private const string CPSProjectRelativePathNoOutputPathNoRuntime =
+            @"../../../../../samples/Ce.Labs.Samples.CPSProjectNoOutputPathNoRuntime/Ce.Labs.Samples.CPSProjectNoOutputPathNoRuntime.csproj";
+        private const string CPSProjectRelativePathNoOutputPathx64 =
+            @"../../../../../samples/Ce.Labs.Samples.CPSProjectNoOutputPathx64/Ce.Labs.Samples.CPSProjectNoOutputPathx64.csproj";
+        private const string CPSProjectRelativePathNoOutputPathx64NoRuntime =
+            @"../../../../../samples/Ce.Labs.Samples.CPSProjectNoOutputPathx64NoRuntime/Ce.Labs.Samples.CPSProjectNoOutputPathx64NoRuntime.csproj";
+
+
+        private readonly IList<string> _temporaryProjectFileCopies = new List<string>();
 
         [TearDown]
         public void TearDown()
@@ -248,7 +258,6 @@ namespace FG.Utils.BuildTools.Tests
             );
         }
 
-
         private void Should_be_able_to_remove_file_without_properties_from_project(string projectRelativePath)
         {
             var projectTool = TempCopyAndGetProject(projectRelativePath);
@@ -282,6 +291,14 @@ namespace FG.Utils.BuildTools.Tests
             );
         }
 
+        private void Should_be_able_to_determine_output_path_for_project(string projectRelativePath, string configuration, string platform, string expectedOutputPath)
+        {
+            var projectTool = TempCopyAndGetProject(projectRelativePath);
+
+            var outputPath = projectTool.GetProjectOutputPath(configuration, platform);
+
+            outputPath.Should().Be(expectedOutputPath);
+        }
 
         [Test]
         public void Should_be_able_to_load_files_in_classic_project()
@@ -400,6 +417,42 @@ namespace FG.Utils.BuildTools.Tests
         public void Should_be_able_to_remove_file_without_properties_from_cps_project()
         {
             Should_be_able_to_remove_file_without_properties_from_project(CPSProjectRelativePath);
+        }
+
+        [Test]
+        public void Should_be_able_to_determine_output_path_for_classic_project()
+        {
+            Should_be_able_to_determine_output_path_for_project(ClassicProjectRelativePath, "Debug", "AnyCPU", @"bin\Debug\special_bin\");
+            Should_be_able_to_determine_output_path_for_project(ClassicProjectRelativePath, "Debug", "x64", @"bin\x64\Debug");
+            Should_be_able_to_determine_output_path_for_project(ClassicProjectRelativePath, "Release", "AnyCPU", @"bin\Release\special_releaseBin");
+            Should_be_able_to_determine_output_path_for_project(ClassicProjectRelativePath, "Release", "x64", @"bin\x64\Release");
+        }
+
+        [Test]
+        public void Should_be_able_to_determine_output_path_for_CPS_project()
+        {
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePath, "Debug", "AnyCPU", @"bin\Debug\net461\win7-x64\special_bin\net461\win7-x64");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePath, "Release", "AnyCPU", @"bin\Release\net461\win7-x64");
+
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPath, "Debug", "AnyCPU", @"bin\Debug\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPath, "Release", "AnyCPU", @"bin\Release\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPath, "Debug", "x64", @"bin\x64\Debug\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPath, "Release", "x64", @"bin\x64\Release\net461");
+
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathNoRuntime, "Debug", "AnyCPU", @"bin\Debug\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathNoRuntime, "Release", "AnyCPU", @"bin\Release\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathNoRuntime, "Debug", "x64", @"bin\x64\Debug\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathNoRuntime, "Release", "x64", @"bin\x64\Release\net461");
+
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64, "Debug", "AnyCPU", @"bin\Debug\net461\win7-x64");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64, "Release", "AnyCPU", @"bin\Release\net461\win7-x64");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64, "Debug", "x64", @"bin\x64\Debug\net461\win7-x64");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64, "Release", "x64", @"bin\x64\Release\net461\win7-x64");
+
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64NoRuntime, "Debug", "AnyCPU", @"bin\Debug\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64NoRuntime, "Release", "AnyCPU", @"bin\Release\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64NoRuntime, "Debug", "x64", @"bin\x64\Debug\net461");
+            Should_be_able_to_determine_output_path_for_project(CPSProjectRelativePathNoOutputPathx64NoRuntime, "Release", "x64", @"bin\x64\Release\net461");
         }
     }
 }
