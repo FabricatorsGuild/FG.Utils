@@ -1329,7 +1329,7 @@ namespace FG.Utils.BuildTools
 
             var isCompileFile = (fileType == ".cs");
             var isContentFile = (fileType == ".json" || fileType == ".config");
-            var action = isCompileFile ? "Update" : "Include";
+            var action = (isCompileFile || isContentFile) ? "Update" : "Include";
 
             includeType = includeType ?? (isCompileFile ? "Compile" : "None");
 

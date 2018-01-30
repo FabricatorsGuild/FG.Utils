@@ -14,5 +14,10 @@ namespace FG.Utils.BuildTools
 		public string Name { get; set; }
 		public string IncludeType { get; set; }
         public IDictionary<string, string> Properties { get; set; }
+
+	    public override string ToString()
+	    {
+	        return $"FileReference {IncludeType}:{Name}";
+	    }
 	}
 }

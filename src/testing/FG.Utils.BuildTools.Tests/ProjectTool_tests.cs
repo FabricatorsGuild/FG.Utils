@@ -170,7 +170,7 @@ namespace FG.Utils.BuildTools.Tests
                 .Select(f => $"{f.IncludeType}:{f.Name}")
                 .ToArray();
 
-            var newFilePath = PathExtensions.GetAbsolutePath(projectTool.FolderPath, $"newContentFile.json");
+            var newFilePath = PathExtensions.GetAbsolutePath(projectTool.FolderPath, $"newContentFile.txt");
 
             projectTool.AddFileToProject(newFilePath, "Content");
             projectTool.Save();
@@ -185,7 +185,7 @@ namespace FG.Utils.BuildTools.Tests
                 .ToArray();
 
             compileFilesAfter.Should().BeEquivalentTo(
-                compileFilesBefore.Union(new string[] { "Content:newContentFile.json" })
+                compileFilesBefore.Union(new string[] { "Content:newContentFile.txt" })
                     .OrderBy(o => o)
                     .Debug(new ConsoleDebugLogger(true))
                     .ToArray()
